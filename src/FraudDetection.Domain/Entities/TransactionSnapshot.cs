@@ -59,7 +59,4 @@ public sealed class TransactionSnapshot : Entity
 
     /// <summary>Whether the original transaction was reversed.</summary>
     public bool IsReversed { get; private set; }
-
-    // Navigation property — alerts that reference this snapshot.
-    public IReadOnlyCollection<FraudAlert> Alerts { get; private set; } = [];
 }

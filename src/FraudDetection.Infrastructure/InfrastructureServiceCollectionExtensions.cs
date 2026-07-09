@@ -1,4 +1,6 @@
+using FraudDetection.Application.Interfaces.Repositories;
 using FraudDetection.Infrastructure.Persistence;
+using FraudDetection.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,11 +13,11 @@ public static class InfrastructureServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // EF Core DbContext with PostgreSQL
+        // EF Core DbContext with PostgreSQL + retry on transient failures.
         services.AddDbContext<FraudDetectionDbContext>((_, options) =>
         {
             options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection"),
+                configuration.GetConnectionString("FraudDb"),
                 npgsql =>
                 {
                     npgsql.EnableRetryOnFailure(
@@ -26,7 +28,10 @@ public static class InfrastructureServiceCollectionExtensions
                 });
         });
 
-        // TODO: Register repositories and services here
+        // Repositories — scoped to match DbContext lifetime.
+        services.AddScoped<ITransactionSnapshotRepository, TransactionSnapshotRepository>();
+        services.AddScoped<IFraudAlertRepository, FraudAlertRepository>();
+        services.AddScoped<IFraudReportRepository, FraudReportRepository>();
 
         return services;
     }
