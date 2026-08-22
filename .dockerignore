@@ -1,0 +1,11 @@
+.git
+.gitignore
+.vs
+bin
+obj
+**/bin
+**/obj
+logs
+*.user
+*.suo
+README.md
