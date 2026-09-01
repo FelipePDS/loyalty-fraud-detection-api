@@ -1,5 +1,8 @@
 using FraudDetection.Application;
+using FraudDetection.API.Endpoints;
 using FraudDetection.Infrastructure;
+using FraudDetection.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -18,6 +21,13 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Apply the schema prepared in phase 1 before accepting transaction snapshots.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<FraudDetectionDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
 // ─── Middleware pipeline ─────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())
 {
@@ -28,7 +38,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // ─── Endpoint registration ───────────────────────────────────────────────────
-// TODO: register endpoint groups here, e.g.:
-// app.MapFraudAlertEndpoints();
+app.MapTransactionIngestionEndpoints();
 
 app.Run();
