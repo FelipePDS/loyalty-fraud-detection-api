@@ -35,6 +35,14 @@ public interface ITransactionSnapshotRepository
     /// <summary>Returns true when a snapshot for <paramref name="originalTransactionId"/> already exists.</summary>
     Task<bool> ExistsAsync(Guid originalTransactionId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Returns source transaction IDs that have already been ingested. This lets a batch be
+    /// deduplicated with one database query instead of one query per transaction.
+    /// </summary>
+    Task<IReadOnlySet<Guid>> GetExistingOriginalTransactionIdsAsync(
+        IReadOnlyCollection<Guid> originalTransactionIds,
+        CancellationToken cancellationToken = default);
+
     Task AddAsync(TransactionSnapshot snapshot, CancellationToken cancellationToken = default);
 
     Task AddRangeAsync(IEnumerable<TransactionSnapshot> snapshots, CancellationToken cancellationToken = default);

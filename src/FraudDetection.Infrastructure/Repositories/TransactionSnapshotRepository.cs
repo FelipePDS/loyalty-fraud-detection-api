@@ -48,6 +48,22 @@ internal sealed class TransactionSnapshotRepository : ITransactionSnapshotReposi
         => await _context.TransactionSnapshots
             .AnyAsync(t => t.OriginalTransactionId == originalTransactionId, cancellationToken);
 
+    public async Task<IReadOnlySet<Guid>> GetExistingOriginalTransactionIdsAsync(
+        IReadOnlyCollection<Guid> originalTransactionIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (originalTransactionIds.Count == 0)
+            return new HashSet<Guid>();
+
+        var existingIds = await _context.TransactionSnapshots
+            .AsNoTracking()
+            .Where(t => originalTransactionIds.Contains(t.OriginalTransactionId))
+            .Select(t => t.OriginalTransactionId)
+            .ToListAsync(cancellationToken);
+
+        return existingIds.ToHashSet();
+    }
+
     public async Task AddAsync(TransactionSnapshot snapshot, CancellationToken cancellationToken = default)
         => await _context.TransactionSnapshots.AddAsync(snapshot, cancellationToken);
 
